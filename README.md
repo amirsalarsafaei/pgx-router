@@ -1,10 +1,10 @@
-# pgx-route
+# pgx-router
 
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
-[![Latest Release](https://img.shields.io/github/v/release/amirsalarsafaei/pgx-route)](https://github.com/amirsalarsafaei/pgx-route/releases/latest)
-[![codecov](https://codecov.io/github/amirsalarsafaei/pgx-route/graph/badge.svg?token=7ue7iNJkCH)](https://codecov.io/github/amirsalarsafaei/pgx-route)
+[![Latest Release](https://img.shields.io/github/v/release/amirsalarsafaei/pgx-router)](https://github.com/amirsalarsafaei/pgx-router/releases/latest)
+[![codecov](https://codecov.io/github/amirsalarsafaei/pgx-router/graph/badge.svg?token=7ue7iNJkCH)](https://codecov.io/github/amirsalarsafaei/pgx-router)
 
-`pgx-route` is a Go library that automatically routes PostgreSQL queries to a primary (read-write) or replica (read-only) connection pool based on the type of SQL statement. It wraps [`pgxpool.Pool`](https://pkg.go.dev/github.com/jackc/pgx/v5/pgxpool) from [pgx](https://github.com/jackc/pgx) and is designed to be a drop-in addition for applications that want to offload read traffic to replicas without changing query code.
+`pgx-router` is a Go library that automatically routes PostgreSQL queries to a primary (read-write) or replica (read-only) connection pool based on the type of SQL statement. It wraps [`pgxpool.Pool`](https://pkg.go.dev/github.com/jackc/pgx/v5/pgxpool) from [pgx](https://github.com/jackc/pgx) and is designed to be a drop-in addition for applications that want to offload read traffic to replicas without changing query code.
 
 ## Features
 
@@ -13,7 +13,7 @@
 - **Locking clause detection** — `SELECT … FOR UPDATE / FOR SHARE` is treated as a write and routed to the primary.
 - **Writable CTE detection** — `WITH … INSERT/UPDATE/DELETE … SELECT` is correctly classified as a write.
 - **Automatic fallback on read-only errors** — if the replica returns a PostgreSQL `read_only_sql_transaction` error (e.g. after a failover), the query is transparently retried on the primary.
-- **Custom retry hook** — supply a `WithRetryOnError` callback to implement your own fallback policy in addition to the built-in detection.
+- **Custom retry hook** — supply a `WithRetryOnError` callback to implement your own fallback policy in addition to the built-in detection (e.g. retry on `pgx.ErrNoRows` or connection errors).
 - **Single-pool mode** — pass `nil` as the read pool and the primary is used for all queries (no-op routing).
 
 ## Installation
@@ -21,8 +21,6 @@
 ```sh
 go get github.com/amirsalarsafaei/pgx-router
 ```
-
-> **Module path note:** the Go module is `github.com/amirsalarsafaei/pgx-router` (with an **r** at the end), while the repository is named `pgx-route`.
 
 ## Quick Start
 
@@ -90,7 +88,11 @@ Registers a custom function that decides whether a failed read-replica query sho
 ```go
 pool := pgxrouter.New(primary, replica,
     pgxrouter.WithRetryOnError(func(err error) bool {
-        // Retry on any connection-level error.
+        // Retry on not-found: the replica may lag behind the primary.
+        if errors.Is(err, pgx.ErrNoRows) {
+            return true
+        }
+        // Also retry on connection-level errors.
         var netErr *net.OpError
         return errors.As(err, &netErr)
     }),
