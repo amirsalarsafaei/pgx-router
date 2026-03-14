@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/amirsalarsafaei/pgx-router/pkg/classify"
+	"github.com/amirsalarsafaei/pgx-router/classify"
 )
 
 // Option configures the Pool behaviour.
