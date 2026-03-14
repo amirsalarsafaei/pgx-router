@@ -135,6 +135,17 @@ SELECT pg_advisory_lock(1)
 
 The keyword match is **case-insensitive**.
 
+## sqlc Integration
+
+If you use [sqlc](https://github.com/sqlc-dev/sqlc) for query code generation, consider [**sqlc-pgx-route**](https://github.com/amirsalarsafaei/sqlc-pgx-route) — a drop-in replacement for `sqlc-gen-go` that determines read/write routing **at code generation time** rather than at runtime.
+
+Instead of parsing SQL on every query execution, `sqlc-pgx-route` uses the PostgreSQL parser once during code generation to classify each query and emits a `PoolRouteQueries` wrapper that calls the correct pool directly. This gives you:
+
+- **Zero per-query routing overhead** — no runtime SQL parsing.
+- **Auditable routing** — because the pool assignment is part of the generated code, code reviews and pull request diffs make it immediately visible which pool each query will use, before any code is merged.
+
+See the [sqlc-pgx-route repository](https://github.com/amirsalarsafaei/sqlc-pgx-route) for installation and configuration instructions.
+
 ## License
 
 [MIT](LICENSE)
