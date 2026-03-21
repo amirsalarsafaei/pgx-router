@@ -2,7 +2,7 @@
 
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
 [![Latest Release](https://img.shields.io/github/v/release/amirsalarsafaei/pgx-router)](https://github.com/amirsalarsafaei/pgx-router/releases/latest)
-[![codecov](https://codecov.io/github/amirsalarsafaei/pgx-router/graph/badge.svg?token=7ue7iNJkCH)](https://codecov.io/github/amirsalarsafaei/pgx-router)
+[![codecov](https://codecov.io/github/amirsalarsafaei/pgx-router/graph/badge.svg)](https://codecov.io/github/amirsalarsafaei/pgx-router?token=7ue7iNJkCH)
 
 `pgx-router` is a Go library that automatically routes PostgreSQL queries to a primary (read-write) or replica (read-only) connection pool based on the type of SQL statement. It wraps [`pgxpool.Pool`](https://pkg.go.dev/github.com/jackc/pgx/v5/pgxpool) from [pgx](https://github.com/jackc/pgx) and is designed to be a drop-in addition for applications that want to offload read traffic to replicas without changing query code.
 
